@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import knight from "./knight.png";
-import targetimg from "./target.png"
+import targetimg from "./target.png";
 
 const Chess = () => {
   const [first, setFirst] = useState([]);
@@ -163,7 +163,16 @@ const Chess = () => {
         possiblemoves[m].nextx == target.targetx &&
         possiblemoves[m].nexty == target.targety
       ) {
-        return alert("Finish point is already in path");
+        return setFirst(
+            first.map((item, index) => {
+            
+              return item.x ==    possiblemoves[m].nextx &&
+                item.y == possiblemoves[m].nexty
+                ? { ...item, king: true }
+                : { ...item, king: false };
+            })
+          );
+       
       }
     }
     // generate more possible moves reachable from current possible moves one by one
@@ -236,14 +245,10 @@ const Chess = () => {
     <div className="App">
       <h1 className=""> Knight Chess Game</h1>
       <div>
-        <h3 onClick={help} style={{cursor:"pointer"}}>
+        <h3 onClick={help} style={{ cursor: "pointer" }}>
           Need Help? Please refresh if nothing shows up on clicking
         </h3>
-        {showinfo && (
-          <div>
-         
-          </div>
-        )}
+        {showinfo && <div></div>}
       </div>
 
       <div className="chessboard">
@@ -256,13 +261,20 @@ const Chess = () => {
                   {/* if king is true this div will render */}
                   <div
                     className="box"
-                    style={{ backgroundColor: "gold", color: "white", fontSize:"20px" }}
+                    style={{
+                      backgroundColor: "gold",
+                      color: "white",
+                      fontSize: "20px",
+                    }}
                     onMouseOver={() => {
                       findmoves();
                     }}
                   >
-                   <img style={{width:"100px", height:"100px"}} src={knight}alt="knight" />
-                   
+                    <img
+                      style={{ width: "100px", height: "100px" }}
+                      src={knight}
+                      alt="knight"
+                    />
                   </div>
                 </>
               ) : (
@@ -272,10 +284,18 @@ const Chess = () => {
                   {ele.target ? (
                     <div
                       className="box"
-                      style={{ backgroundColor: `Red`, color: "white",  fontSize:"20px"  }}
+                      style={{
+                        backgroundColor: `Red`,
+                        color: "white",
+                        fontSize: "20px",
+                      }}
                       onClick={() => checkKing(ele.x, ele.y)}
                     >
-                    <img style={{width:"100px", height:"100px"}} src={targetimg}alt="knight" />
+                      <img
+                        style={{ width: "100px", height: "100px" }}
+                        src={targetimg}
+                        alt="knight"
+                      />
                     </div>
                   ) : (
                     //     {/* render normal div with specified color if no its not target */}
@@ -288,9 +308,7 @@ const Chess = () => {
                           color: "blue",
                         }}
                         onClick={() => chooseKing(index, ele.x, ele.y)}
-                      >
-                     
-                      </div>
+                      ></div>
                     </>
                   )}
                 </>
