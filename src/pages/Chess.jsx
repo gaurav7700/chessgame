@@ -149,7 +149,15 @@ const Chess = () => {
       if (possiblemoves[i].nextx == x && possiblemoves[i].nexty == y) {
         console.log(possiblemoves[i].nextx, x);
         console.log(possiblemoves[i].nexty, y);
-        alert("Great Work");
+        return setFirst(
+          first.map((item, index) => {
+          
+            return item.x ==  possiblemoves[i].nextx &&
+              item.y == possiblemoves[i].nexty
+              ? { ...item, king: true }
+              : { ...item, king: false };
+          })
+        );
       }
     }
   };
