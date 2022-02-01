@@ -61,19 +61,19 @@ const Chess = () => {
 
   //   generate the x and y coordinates for king's and target finish location on first load
   useEffect(() => {
-    const kingx = Math.floor(Math.random() * 4 + 1);
-    const kingy = Math.floor(Math.random() * 4 + 1);
+    const kingx = Math.floor(Math.random() * 5 + 1);
+    const kingy = Math.floor(Math.random() * 5 + 1);
     // save ings x and y point in a state
     setking({ kingx, kingy });
 
-    var targetx = Math.floor(Math.random() * 4 + 1);
-    var targety = Math.floor(Math.random() * 4 + 1);
+    var targetx = Math.floor(Math.random() * 5 + 1);
+    var targety = Math.floor(Math.random() * 5 + 1);
     setTarget({ targetx, targety }); // record target points coordinates
 
     // chnage coordinates if same,  target points coordinates
     if (kingx == targetx && kingy == targety) {
-      var targetx = Math.floor(Math.random() * 4 + 1);
-      var targety = Math.floor(Math.random() * 4 + 1);
+      var targetx = Math.floor(Math.random() * 5 + 1);
+      var targety = Math.floor(Math.random() * 5 + 1);
 
       setTarget({ targetx, targety });
     }
@@ -151,7 +151,6 @@ const Chess = () => {
         console.log(possiblemoves[i].nexty, y);
         return setFirst(
           first.map((item, index) => {
-          
             return item.x ==  possiblemoves[i].nextx &&
               item.y == possiblemoves[i].nexty
               ? { ...item, king: true }
@@ -252,11 +251,12 @@ const Chess = () => {
   return (
     <div className="App">
       <h1 className=""> Knight Chess Game</h1>
-      <div>
-        <h3 onClick={help} style={{ cursor: "pointer" }}>
-          Need Help? Please refresh if nothing shows up on clicking
+      <div style={{textAlign:"center"}}>
+        <h3 onClick={help} style={{ cursor: "pointer", backgroundColor:"dodgerblue", width:"150px", margin:"auto"}}>
+          Need Help?
         </h3>
-        {showinfo && <div></div>}
+        <p style={{ width:"500px", margin:"auto"}}> Please refresh page to reset coordinates if knight does not move on clicking need help.
+       Finish location path can only be found if its 2 or 1 step from Knight's current location.</p>
       </div>
 
       <div className="chessboard">
