@@ -61,19 +61,19 @@ const Chess = () => {
 
   //   generate the x and y coordinates for king's and target finish location on first load
   useEffect(() => {
-    const kingx = Math.floor(Math.random() * 5 + 1);
-    const kingy = Math.floor(Math.random() * 5 + 1);
+    const kingx = Math.floor(Math.random() * 4 + 1);
+    const kingy = Math.floor(Math.random() * 4 + 1);
     // save ings x and y point in a state
     setking({ kingx, kingy });
 
-    var targetx = Math.floor(Math.random() * 5 + 1);
-    var targety = Math.floor(Math.random() * 5 + 1);
+    var targetx = Math.floor(Math.random() * 4 + 1);
+    var targety = Math.floor(Math.random() * 4 + 1);
     setTarget({ targetx, targety }); // record target points coordinates
 
     // chnage coordinates if same,  target points coordinates
     if (kingx == targetx && kingy == targety) {
-      var targetx = Math.floor(Math.random() * 5 + 1);
-      var targety = Math.floor(Math.random() * 5 + 1);
+      var targetx = Math.floor(Math.random() * 4 + 1);
+      var targety = Math.floor(Math.random() * 4 + 1);
 
       setTarget({ targetx, targety });
     }
