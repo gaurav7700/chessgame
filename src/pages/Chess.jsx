@@ -239,19 +239,7 @@ const Chess = () => {
         </h3>
         {showinfo && (
           <div>
-            {autoinfo.map((ele) => {
-              return (
-                <>
-                  <div>Please move to the follwing points respectively</div>
-                  <div>
-                    ({ele.atempx}, {ele.atempy})
-                  </div>
-                  <div>
-                    ({ele.nextx}, {ele.nexty})
-                  </div>
-                </>
-              );
-            })}
+         
           </div>
         )}
       </div>
@@ -266,13 +254,13 @@ const Chess = () => {
                   {/* if king is true this div will render */}
                   <div
                     className="box"
-                    style={{ backgroundColor: "yellow", color: "blue" }}
+                    style={{ backgroundColor: "gold", color: "white", fontSize:"20px" }}
                     onMouseOver={() => {
                       findmoves();
                     }}
                   >
                     Knight
-                    {ele.x}, {ele.y}
+                   
                   </div>
                 </>
               ) : (
@@ -282,10 +270,10 @@ const Chess = () => {
                   {ele.target ? (
                     <div
                       className="box"
-                      style={{ backgroundColor: `Red`, color: "blue" }}
+                      style={{ backgroundColor: `Red`, color: "white",  fontSize:"20px"  }}
                       onClick={() => checkKing(ele.x, ele.y)}
                     >
-                      {ele.x}, {ele.y}
+                   Finish Point
                     </div>
                   ) : (
                     //     {/* render normal div with specified color if no its not target */}
@@ -299,7 +287,7 @@ const Chess = () => {
                         }}
                         onClick={() => chooseKing(index, ele.x, ele.y)}
                       >
-                        {ele.x}, {ele.y}
+                     
                       </div>
                     </>
                   )}

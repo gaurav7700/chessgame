@@ -15,8 +15,9 @@
 }
 
 .box{
-  height: 95px;
-  width: 95px;
-  border: 2px black solid;
+  text-align: center;
+  height: 100px;
+  width: 100px;
+cursor: pointer;
 }
 
