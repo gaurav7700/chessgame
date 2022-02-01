@@ -16,18 +16,18 @@ Open the local host with the following port in browser.
 
 Game Information
 
-The knight can only move in a L-Shape to react its target location.
+The knight can only move in a L-Shape to reach its target location.
 Any move other than L-Shape will be invalid.
 
-You can always move in L shape after in browser and try to reach the finish location.
+You can always move in L shape after open in browser and try to reach the finish location.
 
- Need Hep
+Need Hep--
 
 When you clicks Need Hep, Knight will try to find the finish location, using two steps in the surroundings.
 
-If finish point found, Knight will move to the finish point,
+If finish point found, Knight will move to the finish point by itself,
 
-Or You will need to refresh the page to generate new points for king and finsh point and try again.
+if not found You will need to refresh the page to generate new points for king and finsh point and  click on NEED HELP again.
 
 Cheers
 
