@@ -220,8 +220,8 @@ const Chess = () => {
                     : { ...item, king: false };
                 })
               );
-            }, 2000);
-          }, 2000);
+            }, 1000);
+          }, 1000);
 
           // show the steps user can use to react king
           return setShowinfo(true);
@@ -235,7 +235,7 @@ const Chess = () => {
       <h1 className="">King Knight Chess</h1>
       <div>
         <h3 onClick={help} style={{cursor:"pointer"}}>
-          Need Help? (Please refresh if nothing shows up on clicking{" "}
+          Need Help? Please refresh if nothing shows up on clicking
         </h3>
         {showinfo && (
           <div>
