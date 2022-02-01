@@ -13,7 +13,7 @@ run commands
 => npm start 
 
 Open the local host with the following port in browser.
-
+PS: If you cannnot see both king and finish point please refresh
 Game Information
 
 The knight can only move in a L-Shape to reach its target location.
