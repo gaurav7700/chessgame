@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import knight from "./knight.png";
+import targetimg from "./target.png"
+
 const Chess = () => {
   const [first, setFirst] = useState([]);
   const [king, setking] = useState({});
@@ -273,7 +275,7 @@ const Chess = () => {
                       style={{ backgroundColor: `Red`, color: "white",  fontSize:"20px"  }}
                       onClick={() => checkKing(ele.x, ele.y)}
                     >
-                   Finish Point
+                    <img style={{width:"100px", height:"100px"}} src={targetimg}alt="knight" />
                     </div>
                   ) : (
                     //     {/* render normal div with specified color if no its not target */}
