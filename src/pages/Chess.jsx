@@ -259,7 +259,7 @@ const Chess = () => {
                       findmoves();
                     }}
                   >
-                    Knight
+                   <img style={{width:"100px", height:"100px"}} src={knight}alt="knight" />
                    
                   </div>
                 </>
