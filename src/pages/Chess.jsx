@@ -232,7 +232,7 @@ const Chess = () => {
 
   return (
     <div className="App">
-      <h1 className="">King Knight Chess</h1>
+      <h1 className=""> Knight Chess Game</h1>
       <div>
         <h3 onClick={help} style={{cursor:"pointer"}}>
           Need Help? Please refresh if nothing shows up on clicking
