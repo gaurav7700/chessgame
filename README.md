@@ -21,9 +21,9 @@ Any move other than L-Shape will be invalid.
 
 You can always move in L shape after open in browser and try to reach the finish location.
 
-Need Hep--
+Need Help--
 
-When you clicks Need Hep, Knight will try to find the finish location, using two steps in the surroundings.
+When you clicks Need Help, Knight will try to find the finish location, using two steps in the surroundings.
 
 If finish point found, Knight will move to the finish point by itself,
 
