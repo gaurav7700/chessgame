@@ -191,6 +191,9 @@ body[data-mode=attract] #coinDoor small{animation:flashall 1s steps(1) infinite}
 .opt{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.12);text-align:left;font-size:15px}
 .seg-btns{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .seg-btns button{border:1px solid #6b5bd6;background:transparent;color:#fff;border-radius:8px;padding:5px 9px;font:600 13px Fredoka,sans-serif;cursor:pointer}
+.slider{display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end}
+.slider input{width:min(200px,100%);accent-color:#ffd600;cursor:pointer}
+.slider output{min-width:92px;text-align:right;font:700 13px Orbitron,monospace;color:#ffd600;font-variant-numeric:tabular-nums}
 .seg-btns button.sel{background:#ffd600;color:#1b1040;border-color:#ffd600}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
 .stats div{background:rgba(255,255,255,.06);border-radius:10px;padding:8px}
@@ -317,7 +320,7 @@ body[data-mode=attract] #coinDoor small{animation:flashall 1s steps(1) infinite}
 <div class="modal" id="opModal"><div class="card">
   <h1 style="font-size:30px">OPERATOR MENU</h1>
   <div class="opt"><span>Difficulty</span><div class="seg-btns" id="diffBtns"></div></div>
-  <div class="opt"><span>Hand speed</span><div class="seg-btns" id="speedBtns"></div></div>
+  <div class="opt"><label for="speedRange">Hand speed</label><div class="slider"><input type="range" id="speedRange" min="0.4" max="2.5" step="0.05" value="1"><output id="speedVal" for="speedRange">1.00×</output></div></div>
   <div class="opt"><span>Free play</span><div class="seg-btns" id="freeBtns"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
   <div class="opt"><span>Sound</span><div class="seg-btns" id="sndBtns"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
   <div class="stats">
@@ -373,15 +376,15 @@ const PRIZES=[null,
 /* ---------- STATE / STORAGE ---------- */
 const DIFF={easy:{tol:7,max:220,label:'Easy'},normal:{tol:4.5,max:300,label:'Normal'},hard:{tol:2.8,max:400,label:'Hard'},expert:{tol:1.6,max:520,label:'Expert'}};
 const MAX_STOCK=3;
-const SPEED={slow:{mult:.55,label:'Slow'},normal:{mult:1,label:'Normal'},fast:{mult:1.4,label:'Fast'},turbo:{mult:1.9,label:'Turbo'}};
-let cfg={diff:'normal',speed:'normal',free:false,sound:true};
+const SPEED_MIN=.4,SPEED_MAX=2.5;
+let cfg={diff:'normal',speed:1,free:false,sound:true};
 let stock=[0,3,3,3,3,3,3,3];
 let stats={plays:0,wins:0};
 let bag=[];
 const KEY='superstar.arcade.v1';
 try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d){Object.assign(cfg,d.cfg||{});if(Array.isArray(d.stock)&&d.stock.length===8)stock=d.stock;Object.assign(stats,d.stats||{});if(Array.isArray(d.bag))bag=d.bag;}}catch(e){}
 if(!DIFF[cfg.diff])cfg.diff='normal';
-if(!SPEED[cfg.speed])cfg.speed='normal';
+cfg.speed=Number(cfg.speed);if(!(cfg.speed>=SPEED_MIN&&cfg.speed<=SPEED_MAX))cfg.speed=1;
 function save(){try{localStorage.setItem(KEY,JSON.stringify({cfg,stock,stats,bag}));}catch(e){}}
 
 /* ---------- AUDIO ---------- */
@@ -453,30 +456,30 @@ el('rect',{x:0,y:0,width:400,height:400,rx:14,fill:'#fff',stroke:'#c9ced4','stro
  el('circle',{cx:200,cy:200,r:70,fill:'#fff',opacity:.7},rays);}
 for(const [x,y] of[[18,18],[382,18],[18,382],[382,382]]){el('circle',{cx:x,cy:y,r:6,fill:'#d4d8dd',stroke:'#8a8f96','stroke-width':1.2},svg);el('line',{x1:x-3.5,y1:y,x2:x+3.5,y2:y,stroke:'#7a7f86','stroke-width':1.4},svg);}
 
-/* LED tube: one outline that hugs the outside of every number, with a stepped
-   "tree" between neighbours and an opening at the top where the star rests. */
-const NR=148,CAP=38;                       // number ring radius, tube radius around a number
+/* LED tube: one outline that curves around the outside of every number, with a
+   stepped notch reaching in toward the hub between neighbours; open at the top where the star rests. */
+const NR=148,LR=42;                        // number ring radius, radius of the tube lobe around a number
 const W=(g,x,r)=>{const a=g*Math.PI/180;return[200+r*Math.sin(a)+x*Math.cos(a),200-r*Math.cos(a)+x*Math.sin(a)];};
 const f2=p=>p.map(v=>v.toFixed(2)).join(' ');
-const TREE=[[0,190],[-16,177],[-9,177],[-24,160],[-12,160],[-12,147]];   // apex -> trunk, left half
-function capEnds(n){const c=centerOf(n),a=c*Math.PI/180,o=[Math.sin(a),-Math.cos(a)],t=[Math.cos(a),Math.sin(a)],[cx,cy]=P(NR,c),k=Math.cos(110*Math.PI/180),s=Math.sin(110*Math.PI/180);
-  return[[cx+CAP*(o[0]*k-t[0]*s),cy+CAP*(o[1]*k-t[1]*s)],[cx+CAP*(o[0]*k+t[0]*s),cy+CAP*(o[1]*k+t[1]*s)]];}
+function lobePt(n,phi){const c=centerOf(n)*Math.PI/180,f=phi*Math.PI/180,[cx,cy]=P(NR,centerOf(n));
+  return[cx+LR*(Math.sin(c)*Math.cos(f)+Math.cos(c)*Math.sin(f)),cy+LR*(-Math.cos(c)*Math.cos(f)+Math.sin(c)*Math.sin(f))];}
+const NOTCH=[[-26,141],[-13,141],[-13,127],[-21,127],[-21,108],[0,108]];   // lobe end -> tip, side before the gap
 const segs=[];
 for(let n=1;n<=7;n++){
-  const gPrev=(n-1)*STEP,gNext=n*STEP,[cs,ce]=capEnds(n);
-  let pts=[];
-  if(n===1)pts.push(W(0,30,186));else pts=TREE.map(([x,r])=>W(gPrev,-x,r));
-  let d=`M${f2(pts[0])}`+pts.slice(1).map(p=>` L${f2(p)}`).join('')+` L${f2(cs)} A${CAP} ${CAP} 0 1 1 ${f2(ce)}`;
-  const after=n===7?[W(360,-30,186)]:TREE.slice().reverse().map(([x,r])=>W(gNext,x,r));
-  d+=after.map(p=>` L${f2(p)}`).join('');
-  const s0=pts[0],s1=after[after.length-1];
+  const gPrev=(n-1)*STEP,gNext=n*STEP;
+  const f0=n===1?-40:-92,f1=n===7?40:92;
+  const before=n===1?[P(186,10)]:NOTCH.slice().reverse().map(([x,r])=>W(gPrev,-x,r));
+  const after=n===7?[P(186,350)]:NOTCH.map(([x,r])=>W(gNext,x,r));
+  let d=`M${f2(before[0])}`+before.slice(1).map(p=>` L${f2(p)}`).join('');
+  d+=` L${f2(lobePt(n,f0))} A${LR} ${LR} 0 ${f1-f0>180?1:0} 1 ${f2(lobePt(n,f1))}`+after.map(p=>` L${f2(p)}`).join('');
+  const s0=before[0],s1=after[after.length-1];
   const lg=el('linearGradient',{id:'sg'+n,gradientUnits:'userSpaceOnUse',x1:s0[0],y1:s0[1],x2:s1[0],y2:s1[1]},defs);
   el('stop',{offset:0,'stop-color':COLORS[n===1?7:n-1]},lg);el('stop',{offset:.5,'stop-color':COLORS[n]},lg);el('stop',{offset:1,'stop-color':COLORS[n%7+1]},lg);
   const g=el('g',{class:'seg'},svg);
   el('path',{d,fill:'none',stroke:`url(#sg${n})`,'stroke-width':7,'stroke-linejoin':'round','stroke-linecap':'round'},g);
   el('path',{d,fill:'none',stroke:'#fff','stroke-width':7,'stroke-dasharray':'2 8','stroke-linecap':'round',class:'chase',opacity:.55},g);
   el('path',{d,fill:'none',stroke:'#fff','stroke-width':1.6,opacity:.8},g);
-  if(n<7){const [sx,sy]=W(gNext,0,153);el('circle',{cx:sx,cy:sy,r:5,fill:'#1f1f22',stroke:'#555','stroke-width':1},svg);}
+  if(n<7){const [sx,sy]=W(gNext,0,150);el('circle',{cx:sx,cy:sy,r:5,fill:'#1f1f22',stroke:'#555','stroke-width':1},svg);}
   segs[n]=g;
 }
 const nums=[];
@@ -488,10 +491,10 @@ for(let n=1;n<=7;n++){
   const t=el('text',{x,y:y+13,'text-anchor':'middle','font-family':'Georgia,"Times New Roman",serif','font-weight':700,'font-size':38,fill:COLORS[n]},g);t.textContent=n;
   nums[n]=g;
 }
-el('text',{x:341,y:24,'text-anchor':'middle','font-family':'Arial','font-weight':'bold','font-size':11,fill:'#555','letter-spacing':1},svg).textContent='TIME';
-el('rect',{x:307,y:29,width:68,height:32,rx:4,fill:'#111',stroke:'#9aa0a6','stroke-width':1.5},svg);
-el('text',{x:341,y:54,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':23,fill:'#3a0505'},svg).textContent='88';
-const timeTxt=el('text',{x:341,y:54,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':23,fill:'#ff2b2b',filter:'url(#glow)'},svg);
+el('text',{x:343,y:12,'text-anchor':'middle','font-family':'Arial','font-weight':'bold','font-size':10,fill:'#555','letter-spacing':1},svg).textContent='TIME';
+el('rect',{x:314,y:15,width:58,height:28,rx:4,fill:'#111',stroke:'#9aa0a6','stroke-width':1.5},svg);
+el('text',{x:343,y:37,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':20,fill:'#3a0505'},svg).textContent='88';
+const timeTxt=el('text',{x:343,y:37,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':20,fill:'#ff2b2b',filter:'url(#glow)'},svg);
 timeTxt.textContent='--';
 const WHEEL=['#e53935','#f57c00','#fbc02d','#7cb342','#29b6f6','#1e88e5','#283593','#6a1b9a'];
 function wheel(r,stroke){for(let i=0;i<8;i++)el('path',{d:`M200 200 L${pt(r,i*45-22.5)} A${r} ${r} 0 0 1 ${pt(r,(i+1)*45-22.5)}Z`,fill:WHEEL[i]},svg);
@@ -560,7 +563,7 @@ function startSpin(isAuto){
   setMode('spin');msg(isAuto?'TIME UP! AUTO SPIN...':'RELEASE ON YOUR PRIZE!');
 }
 function advance(dt){
-  const m=SPEED[cfg.speed].mult;
+  const m=cfg.speed;
   speed=Math.min(DIFF[cfg.diff].max*m,speed+750*m*dt);
   const prev=angle;angle+=speed*dt;
   for(let n=1;n<=7;n++){const c=centerOf(n);if(Math.floor((angle-c)/360)>Math.floor((prev-c)/360)){SFX.tick();flashNum(n);}}
@@ -660,11 +663,11 @@ function renderSound(){$('#soundBtn').textContent=cfg.sound?'🔊':'🔇';}
 /* operator */
 const diffBtns=$('#diffBtns');
 for(const k in DIFF){const b=document.createElement('button');b.dataset.v=k;b.textContent=DIFF[k].label;diffBtns.appendChild(b);}
-const speedBtns=$('#speedBtns');
-for(const k in SPEED){const b=document.createElement('button');b.dataset.v=k;b.textContent=SPEED[k].label;speedBtns.appendChild(b);}
+const speedRange=$('#speedRange');
+function renderSpeed(){speedRange.value=cfg.speed;$('#speedVal').textContent=`${cfg.speed.toFixed(2)}× · ${Math.round(DIFF[cfg.diff].max*cfg.speed/6)} RPM`;}
 function renderOp(){
   diffBtns.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===cfg.diff));
-  speedBtns.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===cfg.speed));
+  renderSpeed();
   $('#freeBtns').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',(b.dataset.v==='1')===cfg.free));
   $('#sndBtns').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',(b.dataset.v==='1')===cfg.sound));
   $('#stPlays').textContent=stats.plays;$('#stWins').textContent=stats.wins;
@@ -675,7 +678,7 @@ function openOp(){renderOp();$('#opModal').classList.add('show');}
 $('#opBtn').addEventListener('click',openOp);$('#bagBtn').addEventListener('click',openOp);
 $('#opClose').addEventListener('click',()=>$('#opModal').classList.remove('show'));
 diffBtns.addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.diff=v;save();renderOp();}});
-speedBtns.addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.speed=v;save();renderOp();}});
+speedRange.addEventListener('input',()=>{cfg.speed=Number(speedRange.value);save();renderSpeed();});
 $('#freeBtns').addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.free=v==='1';save();renderOp();renderCredits();if(state==='attract')attractMsg();}});
 $('#sndBtns').addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.sound=v==='1';save();renderOp();renderSound();}});
 $('#restockBtn').addEventListener('click',()=>{stock=[0,3,3,3,3,3,3,3];save();renderStock();renderOp();});
