@@ -107,11 +107,11 @@ function norm(v){const l=Math.hypot(v[0],v[1]);return[v[0]/l,v[1]/l];}
 // pocket around each number, measured off the real machine (angle from the number's axis, radius from the pivot):
 // a wide upper part, a shoulder that steps in, a narrower neck and a curved outer edge.
 // The star's two side corners sit just past the shoulders: they fit only if both drop into the neck.
-const PK={inner:[20.7,118.5],upper:[21.3,150.3],shoulder:[13.2,148.9],neck:[15.1,178.6],arc:183};
+const PK={inner:[20.7,118.5],upper:[21.3,150.3],shoulder:[12.1,149.2],neck:[14,178.6],arc:183};
 function arcPts(r,a0,a1){const k=Math.max(1,Math.ceil(Math.abs(a1-a0)/1.5)),o=[];for(let i=0;i<=k;i++)o.push(P(r,a0+(a1-a0)*i/k));return o;}
 function pocketPts(n){const c=centerOf(n),g0=c-STEP/2,g1=c+STEP/2,A=PK;
   return[...arcPts(A.inner[1],g0,c-A.inner[0]),P(A.upper[1],c-A.upper[0]),P(A.shoulder[1],c-A.shoulder[0]),P(A.neck[1],c-A.neck[0]),
-    ...arcPts(A.arc,c-14.4,c+14.4),P(A.neck[1],c+A.neck[0]),P(A.shoulder[1],c+A.shoulder[0]),P(A.upper[1],c+A.upper[0]),...arcPts(A.inner[1],c+A.inner[0],g1)];}
+    ...arcPts(A.arc,c-A.neck[0]+.7,c+A.neck[0]-.7),P(A.neck[1],c+A.neck[0]),P(A.shoulder[1],c+A.shoulder[0]),P(A.upper[1],c+A.upper[0]),...arcPts(A.inner[1],c+A.inner[0],g1)];}
 
 /* ---------- build the face ---------- */
 const svg=$('#clock'),defs=el('defs',{},svg);
@@ -208,7 +208,7 @@ function fit(n,deg){const pts=CORNERS.map(s=>{const p=rot(s,deg);return[p,(insid
 
 /* ---------- settings ---------- */
 // m = room the star must keep from the outline's centre line (the line is 3.2 wide, so 1.6 means "not touching")
-const DIFF={easy:{m:0,max:300,label:'Easy'},normal:{m:2,max:300,label:'Normal'},hard:{m:3.5,max:300,label:'Hard'},expert:{m:5,max:300,label:'Expert'}};
+const DIFF={easy:{m:-1,max:300,label:'Easy'},normal:{m:1.6,max:300,label:'Normal'},hard:{m:2.4,max:300,label:'Hard'},expert:{m:3.2,max:300,label:'Expert'}};
 const SPEED_MIN=.05,SPEED_MAX=2.5,KEY='superstar.face.v2';
 let cfg={diff:'normal',speed:.15,sound:true};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
