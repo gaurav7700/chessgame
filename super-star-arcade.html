@@ -299,7 +299,7 @@ body[data-mode=attract] #coinDoor small{animation:flashall 1s steps(1) infinite}
     <li><b>Release</b> exactly when the ★ points at the number of the prize you want.</li>
     <li>Land on a number and its prize bin opens. The prize is yours!</li>
   </ol>
-  <p class="muted">You have 15 seconds to start. When time runs out, the machine spins on its own.<br>Press <kbd>O</kbd> or ⚙ for operator settings (difficulty, free play, restock).</p>
+  <p class="muted">You have 15 seconds to start. When time runs out, the machine spins on its own.<br>Press <kbd>O</kbd> or ⚙ for operator settings (difficulty, hand speed, free play, restock).</p>
   <div style="margin-top:14px"><button class="btn" id="playBtn">LET'S PLAY!</button></div>
 </div></div>
 
@@ -317,6 +317,7 @@ body[data-mode=attract] #coinDoor small{animation:flashall 1s steps(1) infinite}
 <div class="modal" id="opModal"><div class="card">
   <h1 style="font-size:30px">OPERATOR MENU</h1>
   <div class="opt"><span>Difficulty</span><div class="seg-btns" id="diffBtns"></div></div>
+  <div class="opt"><span>Hand speed</span><div class="seg-btns" id="speedBtns"></div></div>
   <div class="opt"><span>Free play</span><div class="seg-btns" id="freeBtns"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
   <div class="opt"><span>Sound</span><div class="seg-btns" id="sndBtns"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
   <div class="stats">
@@ -372,13 +373,15 @@ const PRIZES=[null,
 /* ---------- STATE / STORAGE ---------- */
 const DIFF={easy:{tol:7,max:220,label:'Easy'},normal:{tol:4.5,max:300,label:'Normal'},hard:{tol:2.8,max:400,label:'Hard'},expert:{tol:1.6,max:520,label:'Expert'}};
 const MAX_STOCK=3;
-let cfg={diff:'normal',free:false,sound:true};
+const SPEED={slow:{mult:.55,label:'Slow'},normal:{mult:1,label:'Normal'},fast:{mult:1.4,label:'Fast'},turbo:{mult:1.9,label:'Turbo'}};
+let cfg={diff:'normal',speed:'normal',free:false,sound:true};
 let stock=[0,3,3,3,3,3,3,3];
 let stats={plays:0,wins:0};
 let bag=[];
 const KEY='superstar.arcade.v1';
 try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d){Object.assign(cfg,d.cfg||{});if(Array.isArray(d.stock)&&d.stock.length===8)stock=d.stock;Object.assign(stats,d.stats||{});if(Array.isArray(d.bag))bag=d.bag;}}catch(e){}
 if(!DIFF[cfg.diff])cfg.diff='normal';
+if(!SPEED[cfg.speed])cfg.speed='normal';
 function save(){try{localStorage.setItem(KEY,JSON.stringify({cfg,stock,stats,bag}));}catch(e){}}
 
 /* ---------- AUDIO ---------- */
@@ -557,7 +560,8 @@ function startSpin(isAuto){
   setMode('spin');msg(isAuto?'TIME UP! AUTO SPIN...':'RELEASE ON YOUR PRIZE!');
 }
 function advance(dt){
-  speed=Math.min(DIFF[cfg.diff].max,speed+750*dt);
+  const m=SPEED[cfg.speed].mult;
+  speed=Math.min(DIFF[cfg.diff].max*m,speed+750*m*dt);
   const prev=angle;angle+=speed*dt;
   for(let n=1;n<=7;n++){const c=centerOf(n);if(Math.floor((angle-c)/360)>Math.floor((prev-c)/360)){SFX.tick();flashNum(n);}}
 }
@@ -656,8 +660,11 @@ function renderSound(){$('#soundBtn').textContent=cfg.sound?'🔊':'🔇';}
 /* operator */
 const diffBtns=$('#diffBtns');
 for(const k in DIFF){const b=document.createElement('button');b.dataset.v=k;b.textContent=DIFF[k].label;diffBtns.appendChild(b);}
+const speedBtns=$('#speedBtns');
+for(const k in SPEED){const b=document.createElement('button');b.dataset.v=k;b.textContent=SPEED[k].label;speedBtns.appendChild(b);}
 function renderOp(){
   diffBtns.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===cfg.diff));
+  speedBtns.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===cfg.speed));
   $('#freeBtns').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',(b.dataset.v==='1')===cfg.free));
   $('#sndBtns').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',(b.dataset.v==='1')===cfg.sound));
   $('#stPlays').textContent=stats.plays;$('#stWins').textContent=stats.wins;
@@ -668,6 +675,7 @@ function openOp(){renderOp();$('#opModal').classList.add('show');}
 $('#opBtn').addEventListener('click',openOp);$('#bagBtn').addEventListener('click',openOp);
 $('#opClose').addEventListener('click',()=>$('#opModal').classList.remove('show'));
 diffBtns.addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.diff=v;save();renderOp();}});
+speedBtns.addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.speed=v;save();renderOp();}});
 $('#freeBtns').addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.free=v==='1';save();renderOp();renderCredits();if(state==='attract')attractMsg();}});
 $('#sndBtns').addEventListener('click',e=>{const v=e.target.dataset.v;if(v){cfg.sound=v==='1';save();renderOp();renderSound();}});
 $('#restockBtn').addEventListener('click',()=>{stock=[0,3,3,3,3,3,3,3];save();renderStock();renderOp();});
