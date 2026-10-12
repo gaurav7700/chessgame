@@ -9,34 +9,29 @@
 <style>
 :root{
   color-scheme:dark;
-  --bg:#0d0916; --ink:#f4efff; --muted:#a99cc4; --gold:#ffd21f; --panel:#1d1433; --line:#3a2c5c; --pink:#ff4fd8;
+  --bg:#0d0b16; --ink:#f4efff; --muted:#a99cc4; --gold:#ffd21f; --panel:#1d1433; --line:#3a2c5c;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;overflow:hidden}
-body{background:radial-gradient(ellipse at 50% 45%,#2a1640 0%,var(--bg) 70%);color:var(--ink);font-family:Fredoka,system-ui,sans-serif;
+body{background:radial-gradient(ellipse at 50% 45%,#272040 0%,var(--bg) 70%);color:var(--ink);font-family:Fredoka,system-ui,sans-serif;
   display:grid;place-items:center;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #face{position:relative;width:min(94vw,94vh);height:min(94vw,94vh);border-radius:12px;cursor:pointer;touch-action:none;-webkit-touch-callout:none;
-  box-shadow:0 0 0 5px #d5d9e0,0 0 0 7px #9aa0aa,0 0 50px 8px rgba(255,79,216,.35),0 24px 60px rgba(0,0,0,.7)}
+  box-shadow:0 0 0 5px #e3e6eb,0 0 0 7px #a3a8b2,0 0 50px 8px rgba(190,160,255,.3),0 24px 60px rgba(0,0,0,.7)}
 #face svg{width:100%;height:100%;display:block;border-radius:12px}
 
-/* tube */
-.seg .glow{opacity:.3;transition:opacity .12s}
-.seg .dash{opacity:.45;animation:dash .6s linear infinite}
-.seg.on .glow{opacity:1}
-.seg.on .dash{opacity:1}
-@keyframes dash{to{stroke-dashoffset:-16}}
-body[data-mode=spin] .seg .dash{animation-duration:.25s}
+/* edge-lit acrylic outline */
+.seg .glow{stroke:#c9b2ff;opacity:.55;transition:opacity .12s,stroke .12s}
+.seg.on .glow{stroke:#ff9cf0;opacity:1}
 .leds{animation:twinkle 1.2s steps(2) infinite}
-@keyframes twinkle{50%{opacity:.55}}
+@keyframes twinkle{50%{opacity:.6}}
 
 /* numbers */
 .num{transform-box:fill-box;transform-origin:center;transition:transform .12s}
-.num.hit{transform:scale(1.15)}
-.num.hit .disc,.num.win .disc{fill:var(--c)}
-.num.hit text,.num.win text{fill:#fff}
+.num.hit{transform:scale(1.12)}
+.num.win .disc{fill:var(--c);fill-opacity:.9}
+.num.win text{fill:#fff}
 .num.win{animation:numwin .3s infinite alternate}
-@keyframes numwin{from{transform:scale(1)}to{transform:scale(1.25)}}
-.num.miss .disc{fill:rgba(255,255,255,.85)}
+@keyframes numwin{from{transform:scale(1)}to{transform:scale(1.2)}}
 
 /* toast */
 #toast{position:absolute;left:0;right:0;top:39%;display:flex;justify-content:center;pointer-events:none}
@@ -67,14 +62,14 @@ body[data-mode=spin] .seg .dash{animation-duration:.25s}
 .note{color:var(--muted);font-size:13px;line-height:1.4;margin:12px 0}
 #close{display:block;margin:6px auto 0;border:none;border-radius:12px;padding:10px 28px;font:400 18px 'Luckiest Guy',Impact,sans-serif;letter-spacing:.04em;
   color:#fff;background:linear-gradient(#ff5252,#c4001d);box-shadow:0 4px 0 #7a0010;cursor:pointer}
-@media (prefers-reduced-motion:reduce){.seg .dash,.leds,.num.win,#toast.idle .box{animation:none!important}#toast .box{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.leds,.num.win,#toast.idle .box{animation:none!important}#toast .box{opacity:1;transform:none}}
 </style>
 </head>
 <body data-mode="idle">
 
-<div id="face" aria-label="Super Star clock. Press and hold to spin, release to stop." role="button" tabindex="0">
+<div id="face" aria-label="Super Star clock. Press and hold to spin, release to stop the star inside a number's outline." role="button" tabindex="0">
   <svg id="clock" viewBox="0 0 400 400"></svg>
-  <div id="toast" class="idle"><div class="box"><h2 id="toastH">PRESS &amp; HOLD</h2><p id="toastP">Release when the ★ is on a number</p></div></div>
+  <div id="toast" class="idle"><div class="box"><h2 id="toastH">PRESS &amp; HOLD</h2><p id="toastP">Let go when the ★ fits inside a number's outline</p></div></div>
 </div>
 
 <button id="gear" aria-label="Settings">⚙</button>
@@ -82,9 +77,9 @@ body[data-mode=spin] .seg .dash{animation-duration:.25s}
 <div id="settings"><div class="card">
   <h1>SETTINGS</h1>
   <div class="opt"><span>Difficulty</span><div class="seg-btns" id="diffBtns"></div></div>
-  <div class="opt"><label for="speedRange">Hand speed</label><div class="slider"><input type="range" id="speedRange" min="0.4" max="2.5" step="0.05" value="1"><output id="speedVal" for="speedRange">1.00×</output></div></div>
+  <div class="opt"><label for="speedRange">Hand speed</label><div class="slider"><input type="range" id="speedRange" min="0.05" max="2.5" step="0.05" value="0.15"><output id="speedVal" for="speedRange">0.15×</output></div></div>
   <div class="opt"><span>Sound</span><div class="seg-btns" id="sndBtns"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
-  <p class="note">Hold the clock (or <b>Space</b>) to spin the hand. Let go when the star is on a number. Difficulty sets how close to the centre of a number you must stop.</p>
+  <p class="note">Hold the clock (or <b>Space</b>) to spin the hand. Let go when the whole star fits inside the outline around a number. If any part of the star touches the outline, it's a miss. Easy lets the star overlap the line a little; Hard and Expert need a clear gap.</p>
   <button id="close">CLOSE</button>
 </div></div>
 
@@ -97,113 +92,132 @@ function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const
 const mod=(a,n)=>((a%n)+n)%n;
 
 /* ---------- geometry ---------- */
-const COLORS=['','#e01b24','#ff4a12','#f5a400','#3dbb2e','#1565c0','#1a237e','#c2185b'];
+const COLORS=['','#e3141f','#f05a1e','#e9b000','#45ad2b','#1d5ad6','#1e2190','#b4168f'];
 const STEP=360/7;
 const centerOf=n=>(n-.5)*STEP;                 // 1 at 25.7°, 4 at the bottom, 7 at 334.3°
+const NR=148;                                   // number ring radius = distance of the star centre from the pivot
+const SR=34,SRI=14.5;                           // star outer and inner radius (black outline edge)
+const GAP=5;                                    // how far the outline sits outside the star when perfectly lined up
 const P=(r,deg)=>{const a=deg*Math.PI/180;return[200+r*Math.sin(a),200-r*Math.cos(a)];};
 const W=(g,x,r)=>{const a=g*Math.PI/180;return[200+r*Math.sin(a)+x*Math.cos(a),200-r*Math.cos(a)+x*Math.sin(a)];};
-const f2=p=>p.map(v=>v.toFixed(2)).join(' ');
-function starPts(R,r,cx,cy,k=5){let s=[];for(let i=0;i<k*2;i++){const rr=i%2?r:R,a=i*180/k*Math.PI/180;s.push((cx+rr*Math.sin(a)).toFixed(2)+','+(cy-rr*Math.cos(a)).toFixed(2));}return s.join(' ');}
+const f2=p=>p[0].toFixed(2)+' '+p[1].toFixed(2);
+function starArr(R,r,cx,cy,k=5){const s=[];for(let i=0;i<k*2;i++){const rr=i%2?r:R,a=i*Math.PI/k;s.push([cx+rr*Math.sin(a),cy-rr*Math.cos(a)]);}return s;}
+const starPts=(...a)=>starArr(...a).map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join(' ');
 function wedge(r,a0,a1){return`M200 200 L${f2(P(r,a0))} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${f2(P(r,a1))}Z`;}
-const NR=148;                                   // radius of the number ring (and of the star tip)
+// point in the star's own frame (x = clockwise, y = outward) around number n
+function local(n,x,y){const c=centerOf(n)*Math.PI/180,[cx,cy]=P(NR,centerOf(n));return[cx+x*Math.cos(c)+y*Math.sin(c),cy+x*Math.sin(c)-y*Math.cos(c)];}
+// the star's convex hull (a pentagon) grown by GAP: this is the pocket the star has to fit in
+const HULL=(()=>{const v=[0,4,3,2,1].map(i=>{const a=i*72*Math.PI/180;return[SR*Math.sin(a),SR*Math.cos(a)];});  // top, left, lower-left, lower-right, right (CCW, y up)
+  const out=[];for(let i=0;i<5;i++){const a=v[(i+4)%5],b=v[i],c=v[(i+1)%5];
+    const n1=norm([b[1]-a[1],-(b[0]-a[0])]),n2=norm([c[1]-b[1],-(c[0]-b[0])]),k=GAP/(1+n1[0]*n2[0]+n1[1]*n2[1]);
+    out.push([b[0]+(n1[0]+n2[0])*k,b[1]+(n1[1]+n2[1])*k]);}
+  return{top:out[0],ls:out[1],ll:out[2],rl:out[3],rs:out[4]};})();
+function norm(v){const l=Math.hypot(v[0],v[1]);return[v[0]/l,v[1]/l];}
+const TOOTH=[[-14,112],[-14,104],[-6,104],[-6,98],[0,98]];   // stepped tooth between two pockets, outer -> tip, on the side before the gap
 
 /* ---------- build the face ---------- */
 const svg=$('#clock'),defs=el('defs',{},svg);
 defs.innerHTML=`
-<radialGradient id="panel" cx="50%" cy="48%" r="70%"><stop offset="0" stop-color="#fefcff"/><stop offset=".6" stop-color="#f1e9fb"/><stop offset="1" stop-color="#dcc9f0"/></radialGradient>
-<filter id="blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
+<radialGradient id="panel" cx="50%" cy="48%" r="72%"><stop offset="0" stop-color="#f7f5fd"/><stop offset=".6" stop-color="#e9e4f7"/><stop offset="1" stop-color="#d4cbee"/></radialGradient>
+<filter id="blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.6"/></filter>
 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<filter id="hs" x="-40%" y="-20%" width="180%" height="140%"><feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#2a0b3a" flood-opacity=".45"/></filter>
-<radialGradient id="steel" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c9ccd3"/><stop offset="1" stop-color="#7d828c"/></radialGradient>
-<linearGradient id="stemG" gradientUnits="userSpaceOnUse" x1="0" y1="72" x2="0" y2="185"><stop offset="0" stop-color="#7a2a16"/><stop offset=".35" stop-color="#b9271f"/><stop offset="1" stop-color="#e3262b"/></linearGradient>
-<linearGradient id="tailG" gradientUnits="userSpaceOnUse" x1="0" y1="225" x2="0" y2="318"><stop offset="0" stop-color="#4a1f8f"/><stop offset="1" stop-color="#1d2470"/></linearGradient>`;
+<filter id="hs" x="-40%" y="-20%" width="180%" height="140%"><feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#2a1050" flood-opacity=".35"/></filter>
+<radialGradient id="steel" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#cfd1d8"/><stop offset="1" stop-color="#80858f"/></radialGradient>
+<linearGradient id="stemG" gradientUnits="userSpaceOnUse" x1="0" y1="70" x2="0" y2="190"><stop offset="0" stop-color="#e8601c"/><stop offset=".5" stop-color="#dc3e1f"/><stop offset="1" stop-color="#b92a22"/></linearGradient>
+<linearGradient id="tailG" gradientUnits="userSpaceOnUse" x1="0" y1="212" x2="0" y2="320"><stop offset="0" stop-color="#6a2aa0"/><stop offset="1" stop-color="#262488"/></linearGradient>`;
 
 el('rect',{x:0,y:0,width:400,height:400,rx:10,fill:'url(#panel)'},svg);
-el('rect',{x:2,y:2,width:396,height:396,rx:9,fill:'none',stroke:'#ff8ae6','stroke-width':3,opacity:.6,filter:'url(#blur)'},svg);
-for(const [x,y] of[[16,16],[16,384],[384,384]]){el('circle',{cx:x,cy:y,r:5.5,fill:'url(#steel)',stroke:'#7d828c','stroke-width':1},svg);el('line',{x1:x-3,y1:y,x2:x+3,y2:y,stroke:'#6b7079','stroke-width':1.3},svg);}
+el('rect',{x:2,y:2,width:396,height:396,rx:9,fill:'none',stroke:'#c9b2ff','stroke-width':3,opacity:.5,filter:'url(#blur)'},svg);
+for(const [x,y] of[[16,384],[384,384],[386,14]]){el('circle',{cx:x,cy:y,r:5.5,fill:'url(#steel)',stroke:'#80858f','stroke-width':1},svg);el('line',{x1:x-3,y1:y,x2:x+3,y2:y,stroke:'#6b7079','stroke-width':1.3},svg);}
+// white LED strip at the left edge
+{const g=el('g',{class:'leds',filter:'url(#glow)'},svg);for(let y=8;y<=392;y+=8){el('circle',{cx:8,cy:y,r:1.5,fill:'#fff'},g);el('circle',{cx:15,cy:y+4,r:1.5,fill:'#fff'},g);}}
 
-// white LED strip behind the acrylic
-{const g=el('g',{class:'leds',filter:'url(#glow)'},svg);for(let y=10;y<=392;y+=9)el('circle',{cx:62,cy:y,r:1.5,fill:'#fff'},g);}
-
-// pink neon tube: a tab around every number and a stepped tooth reaching in toward the hub between numbers
-const TAB=15;                                   // half-angle of a number's tab
-const TOOTH=[[-18,145],[-18,131],[-10,131],[-10,115],[0,115]];   // outer -> tip, on the side before the gap
-const segs=[];
-for(let n=1;n<=7;n++){
-  const c=centerOf(n),gPrev=(n-1)*STEP,gNext=n*STEP;
-  const inPts=TOOTH.slice().reverse().map(([x,r])=>W(gPrev,-x,r));
-  const outPts=TOOTH.map(([x,r])=>W(gNext,x,r));
-  let d=`M${f2(inPts[0])}`+inPts.slice(1).map(p=>` L${f2(p)}`).join('');
-  d+=` L${f2(P(147,c-TAB))} L${f2(P(178,c-TAB))} Q${f2(P(186,c-TAB))} ${f2(P(186,c-TAB+3))}`;
-  d+=` A186 186 0 0 1 ${f2(P(186,c+TAB-3))} Q${f2(P(186,c+TAB))} ${f2(P(178,c+TAB))} L${f2(P(147,c+TAB))}`;
-  d+=outPts.map(p=>` L${f2(p)}`).join('');
-  const g=el('g',{class:'seg'},svg);
-  el('path',{d,class:'glow',fill:'none',stroke:'#ff5fe0','stroke-width':13,'stroke-linejoin':'round','stroke-linecap':'round',filter:'url(#blur)'},g);
-  el('path',{d,fill:'none',stroke:'#ff4fd8','stroke-width':5.5,'stroke-linejoin':'round','stroke-linecap':'round'},g);
-  el('path',{d,class:'dash',fill:'none',stroke:'#fff','stroke-width':3,'stroke-dasharray':'6 10','stroke-linejoin':'round'},g);
-  el('path',{d,fill:'none',stroke:'#ffe3fa','stroke-width':1.2,opacity:.85},g);
-  segs[n]=g;
-}
-// standoff screws between the numbers
-for(let k=0;k<7;k++){const [x,y]=W(k*STEP,0,151);el('circle',{cx:x,cy:y,r:6,fill:'url(#steel)',stroke:'#6b7079','stroke-width':1},svg);el('circle',{cx:x,cy:y,r:2.4,fill:'#4a4e56'},svg);}
+// grooved colour disc
+for(const [a0,a1,col] of[[0,55,'#e3262f'],[55,95,'#ee4a25'],[95,125,'#f7801f'],[125,175,'#f6c623'],[175,205,'#43b649'],[205,255,'#2a6fdb'],[255,300,'#1d2a78'],[300,360,'#8a2aa6']])
+  el('path',{d:wedge(88,a0,a1),fill:col},svg);
+for(let r=30;r<=86;r+=2.8)el('circle',{cx:200,cy:200,r:r.toFixed(1),fill:'none',stroke:'#fff','stroke-width':.6,opacity:.35},svg);
+el('circle',{cx:200,cy:200,r:88,fill:'none',stroke:'#1b1a33','stroke-width':3},svg);
+{const [lx,ly]=P(62,122);
+ el('text',{x:lx,y:ly-1,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':9,fill:'#ffd21f',stroke:'#c2185b','stroke-width':1.6,'paint-order':'stroke'},svg).textContent='SUPER';
+ el('text',{x:lx,y:ly+8,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':9,fill:'#ffd21f',stroke:'#c2185b','stroke-width':1.6,'paint-order':'stroke'},svg).textContent='STAR';
+ el('polygon',{points:starPts(5,2.1,lx+17,ly+2),fill:'#ff4fa3',stroke:'#fff','stroke-width':.8},svg);}
 
 // numbers
 const nums=[];
 for(let n=1;n<=7;n++){
   const [x,y]=P(NR,centerOf(n)),g=el('g',{class:'num'},svg);g.style.setProperty('--c',COLORS[n]);
-  el('circle',{cx:x,cy:y,r:30,fill:'rgba(255,255,255,.35)',stroke:COLORS[n],'stroke-width':2.5,class:'disc'},g);
-  el('text',{x,y:y+14.5,'text-anchor':'middle','font-family':'"Archivo Black","Arial Black",Impact,sans-serif','font-size':40,fill:COLORS[n]},g).textContent=n;
+  el('circle',{cx:x,cy:y,r:27,fill:COLORS[n],'fill-opacity':.13,stroke:COLORS[n],'stroke-width':2,'stroke-opacity':.85,class:'disc'},g);
+  el('text',{x,y:y+12.5,'text-anchor':'middle','font-family':'"Archivo Black","Arial Black",Impact,sans-serif','font-size':35,fill:COLORS[n]},g).textContent=n;
   nums[n]=g;
 }
 
+// outline: one closed edge-lit line. Each number sits in a pocket cut to the star's shape; a stepped tooth
+// with a screw separates neighbouring pockets. Segment n = half tooth + pocket n + half tooth.
+const segs=[],pockets=[];
+for(let n=1;n<=7;n++){
+  const gPrev=(n-1)*STEP,gNext=n*STEP,H=HULL;
+  const pts=[...TOOTH.slice().reverse().map(([x,r])=>W(gPrev,-x,r)),local(n,...H.ll),local(n,...H.ls),local(n,...H.top),local(n,...H.rs),local(n,...H.rl),...TOOTH.map(([x,r])=>W(gNext,x,r))];
+  const d='M'+pts.map(f2).join(' L');
+  const g=el('g',{class:'seg'},svg);
+  el('path',{d,class:'glow',fill:'none','stroke-width':10,'stroke-linejoin':'round','stroke-linecap':'round',filter:'url(#blur)'},g);
+  el('path',{d,fill:'none',stroke:'#ffffff','stroke-width':3.2,'stroke-linejoin':'round','stroke-linecap':'round'},g);
+  segs[n]=g;pockets[n]=densify(pts,1);
+}
+function densify(pts,step){const out=[];for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],k=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/step));for(let j=0;j<k;j++)out.push([a[0]+(b[0]-a[0])*j/k,a[1]+(b[1]-a[1])*j/k]);}out.push(pts[pts.length-1]);return out;}
+// standoff screws in the acrylic between pockets
+for(let k=0;k<7;k++){const [x,y]=W(k*STEP,0,150);el('circle',{cx:x,cy:y,r:6,fill:'url(#steel)',stroke:'#6b7079','stroke-width':1},svg);el('circle',{cx:x,cy:y,r:2.4,fill:'#4a4e56'},svg);}
+
 // TIME display
-el('text',{x:355,y:21,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':18,fill:'#e2b419',stroke:'#3a2a00','stroke-width':2.2,'paint-order':'stroke','letter-spacing':1},svg).textContent='TIME';
-el('rect',{x:322,y:25,width:66,height:25,rx:3,fill:'#140606',stroke:'#45464d','stroke-width':1.5},svg);
-el('text',{x:355,y:43.5,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':16,fill:'#3a0707'},svg).textContent='88.8';
-const timeTxt=el('text',{x:355,y:43.5,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':16,fill:'#ff2a1f',filter:'url(#glow)'},svg);
+el('text',{x:360,y:30,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':17,fill:'#d9b21a',stroke:'#3a2a00','stroke-width':2.2,'paint-order':'stroke','letter-spacing':1},svg).textContent='TIME';
+el('rect',{x:331,y:34,width:58,height:23,rx:3,fill:'#140606',stroke:'#45464d','stroke-width':1.5},svg);
+el('text',{x:360,y:51,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':14.5,fill:'#3a0707'},svg).textContent='88.8';
+const timeTxt=el('text',{x:360,y:51,'text-anchor':'middle','font-family':'Orbitron,monospace','font-weight':900,'font-size':14.5,fill:'#ff2a1f',filter:'url(#glow)'},svg);
 
-// big grooved colour disc
-for(const [a0,a1,col] of[[0,90,'#e8262b'],[90,140,'#f7781d'],[140,175,'#f9b320'],[175,200,'#3fb34f'],[200,260,'#1f78d1'],[260,300,'#1f2a7a'],[300,360,'#7b2a9e']])
-  el('path',{d:wedge(82,a0,a1),fill:col},svg);
-for(let r=33;r<=80;r+=3.6)el('circle',{cx:200,cy:200,r:r.toFixed(1),fill:'none',stroke:'#fff','stroke-width':.7,opacity:.22},svg);
-el('circle',{cx:200,cy:200,r:82,fill:'none',stroke:'#1d1b33','stroke-width':3},svg);
-{const [lx,ly]=P(58,122);
- el('text',{x:lx,y:ly-1,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':9,fill:'#ffd21f',stroke:'#c2185b','stroke-width':1.6,'paint-order':'stroke'},svg).textContent='SUPER';
- el('text',{x:lx,y:ly+8,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':9,fill:'#ffd21f',stroke:'#c2185b','stroke-width':1.6,'paint-order':'stroke'},svg).textContent='STAR';
- el('polygon',{points:starPts(5,2.1,lx+17,ly+2),fill:'#ff4fa3',stroke:'#fff','stroke-width':.8},svg);}
-
-// the hand (rotates as one piece): navy tail, red stem, white edge, gold star, hub wheel
+// the hand: curved orange-red stem, purple tail, rainbow hub with compass, layered star, frosted white edge
+function bez(p,t){const u=1-t;return[0,1].map(i=>u*u*u*p[0][i]+3*u*u*t*p[1][i]+3*u*t*t*p[2][i]+t*t*t*p[3][i]);}
+function ribbon(p,w0,w1,N=36){const L=[],R=[];for(let i=0;i<=N;i++){const t=i/N,a=bez(p,t),b=bez(p,Math.min(1,t+.01)),c=bez(p,Math.max(0,t-.01)),n=norm([-(b[1]-c[1]),b[0]-c[0]]),w=(w0+(w1-w0)*t)/2;
+  L.push([a[0]+n[0]*w,a[1]+n[1]*w]);R.push([a[0]-n[0]*w,a[1]-n[1]*w]);}return'M'+L.map(f2).join(' L')+' L'+R.reverse().map(f2).join(' L')+'Z';}
+const STEMC=[[200,192],[217,150],[183,110],[200,70]],TAILC=[[200,210],[206,250],[183,282],[190,320]];
+const STEM=ribbon(STEMC,22,12),TAIL=ribbon(TAILC,24,36),SY=200-NR;
 const hand=el('g',{filter:'url(#hs)'},svg);
-const TAIL='M182 226 C181 260 178 292 175 318 L227 304 C223 280 220 254 218 226Z';
-const STEM='M187 182 C186 150 195 112 194 76 L206 76 C207 112 214 150 213 182Z';
-const SY=200-NR;
-const edge={fill:'#fff',stroke:'#fff','stroke-width':9,'stroke-linejoin':'round'};
-el('path',{d:TAIL,...edge},hand);el('path',{d:STEM,...edge},hand);el('circle',{cx:200,cy:200,r:33,...edge},hand);
-el('polygon',{points:starPts(30,13,200,SY),...edge,'stroke-width':6},hand);
+const frost={fill:'#fdfbff',stroke:'#fdfbff','stroke-width':10,'stroke-linejoin':'round',opacity:.95};
+el('path',{d:TAIL,...frost},hand);el('path',{d:STEM,...frost},hand);el('circle',{cx:200,cy:200,r:37,...frost},hand);
+el('polygon',{points:starPts(SR,SRI,200,SY),...frost,'stroke-width':12},hand);
+const dark={fill:'#1a1024',stroke:'#1a1024','stroke-width':3,'stroke-linejoin':'round'};
+el('path',{d:TAIL,...dark},hand);el('path',{d:STEM,...dark},hand);el('circle',{cx:200,cy:200,r:34,...dark},hand);
 el('path',{d:TAIL,fill:'url(#tailG)'},hand);
-for(const [x,y] of[[192,250],[205,272],[189,292],[212,290],[200,236]])el('polygon',{points:starPts(2.6,1.1,x,y),fill:'#fff',opacity:.5},hand);
 el('path',{d:STEM,fill:'url(#stemG)'},hand);
-for(const [x,y] of[[199,110],[202,140],[197,160],[203,95]])el('circle',{cx:x,cy:y,r:.9,fill:'#ffd76a',opacity:.8},hand);
-el('polygon',{points:starPts(28,12,200,SY),fill:'#3a2a10','stroke-linejoin':'round'},hand);
-el('polygon',{points:starPts(25,10.7,200,SY),fill:'#ffd21f'},hand);
-el('polygon',{points:starPts(17.5,7.5,200,SY),fill:'#5a3d0c'},hand);
-el('polygon',{points:starPts(15.5,6.6,200,SY),fill:'#ffc400'},hand);
-el('polygon',{points:starPts(7,3,200,SY),fill:'#1a237e'},hand);
-{const IW=['#43b649','#1e88e5','#1a237e','#e53935','#fb8c00','#fdd835'];
- IW.forEach((col,i)=>el('path',{d:wedge(27,i*60-30,i*60+30),fill:col},hand));
- for(let r=17;r<=26;r+=3)el('circle',{cx:200,cy:200,r,fill:'none',stroke:'#fff','stroke-width':.6,opacity:.25},hand);
- el('circle',{cx:200,cy:200,r:15,fill:'#fff',stroke:'#1a237e','stroke-width':1.2},hand);
- el('polygon',{points:starPts(13.5,4.2,200,200,16),fill:'#1a237e'},hand);
- el('polygon',{points:starPts(9,3.2,200,200,8),fill:'#3f51b5'},hand);
- el('circle',{cx:200,cy:200,r:4.2,fill:'url(#steel)',stroke:'#555','stroke-width':.8},hand);}
+for(const [p,ts] of[[STEMC,[.12,.22,.32,.42,.52,.62,.72,.82,.9]],[TAILC,[.25,.42,.58,.74,.9]]])
+  ts.forEach((t,i)=>{const [x,y]=bez(p,t);el('polygon',{points:starPts(2+(i%3)*.8,.9+(i%3)*.35,x+(i%2?3:-3),y),fill:'none',stroke:'#fff','stroke-width':.7,opacity:.85},hand);});
+['#7b2aa6','#e3262f','#f7801f','#f6c623','#43b649','#2a6fdb'].forEach((col,i)=>el('path',{d:wedge(32,i*60-30,i*60+30),fill:col},hand));
+for(let r=18;r<=31;r+=2.6)el('circle',{cx:200,cy:200,r,fill:'none',stroke:'#fff','stroke-width':.5,opacity:.3},hand);
+el('circle',{cx:200,cy:200,r:15,fill:'#fff',stroke:'#1a1024','stroke-width':1.2},hand);
+el('polygon',{points:starPts(13.5,4.2,200,200,16),fill:'#1a237e'},hand);
+el('polygon',{points:starPts(8.5,3,200,200,8),fill:'#3f51b5'},hand);
+el('circle',{cx:200,cy:200,r:4,fill:'url(#steel)',stroke:'#555','stroke-width':.8},hand);
+el('polygon',{points:starPts(SR,SRI,200,SY),...dark,'stroke-width':2},hand);
+el('polygon',{points:starPts(31,13.2,200,SY),fill:'#e9e51c'},hand);
+el('polygon',{points:starPts(22.5,9.6,200,SY),fill:'#7a1a10'},hand);
+el('polygon',{points:starPts(21,9,200,SY),fill:'#f0a51c'},hand);
+el('polygon',{points:starPts(8.5,3.6,200,SY),fill:'#1a237e'},hand);
+const marks=el('g',{},svg);
+
+/* ---------- star fit ---------- */
+const STAR=densify([...starArr(SR,SRI,200,SY),starArr(SR,SRI,200,SY)[0]],1.5);
+function rot(p,deg){const a=deg*Math.PI/180,c=Math.cos(a),s=Math.sin(a),x=p[0]-200,y=p[1]-200;return[200+x*c-y*s,200+x*s+y*c];}
+function inside(p,poly){let k=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])k=!k;}return k;}
+function distTo(p,poly){let m=1e9;for(const q of poly){const d=(q[0]-p[0])**2+(q[1]-p[1])**2;if(d<m)m=d;}return Math.sqrt(m);}
+// smallest signed distance from the star's edge to the outline: positive = inside with that much room
+function fit(n,deg){let min=1e9;const pts=[];for(const s of STAR){const p=rot(s,deg),d=(inside(p,pockets[n])?1:-1)*distTo(p,pockets[n]);pts.push([p,d]);if(d<min)min=d;}return{min,pts};}
 
 /* ---------- settings ---------- */
-const DIFF={easy:{tol:7,max:220,label:'Easy'},normal:{tol:4.5,max:300,label:'Normal'},hard:{tol:2.8,max:400,label:'Hard'},expert:{tol:1.6,max:520,label:'Expert'}};
-const SPEED_MIN=.4,SPEED_MAX=2.5,KEY='superstar.face.v1';
-let cfg={diff:'normal',speed:1,sound:true};
+// m = room the star must keep from the outline's centre line (the line is 3.2 wide, so 1.6 means "not touching")
+const DIFF={easy:{m:-3,max:300,label:'Easy'},normal:{m:1.6,max:300,label:'Normal'},hard:{m:3,max:300,label:'Hard'},expert:{m:4,max:300,label:'Expert'}};
+const SPEED_MIN=.05,SPEED_MAX=2.5,KEY='superstar.face.v2';
+let cfg={diff:'normal',speed:.15,sound:true};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
 if(!DIFF[cfg.diff])cfg.diff='normal';
-cfg.speed=Number(cfg.speed);if(!(cfg.speed>=SPEED_MIN&&cfg.speed<=SPEED_MAX))cfg.speed=1;
+cfg.speed=Number(cfg.speed);if(!(cfg.speed>=SPEED_MIN&&cfg.speed<=SPEED_MAX))cfg.speed=.15;
 cfg.sound=cfg.sound!==false;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(cfg));}catch(e){}}
 
@@ -235,19 +249,20 @@ function toast(h,p,color,cls='show',ms=2300){
 }
 function hideToast(){clearTimeout(toastTimer);$('#toast').className='';}
 function setMode(m){document.body.dataset.mode=m;}
-function flashNum(n,cls='hit',ms=140){nums[n].classList.add(cls);setTimeout(()=>nums[n].classList.remove(cls),ms);}
+function flashNum(n,ms=140){nums[n].classList.add('hit');setTimeout(()=>nums[n].classList.remove('hit'),ms);}
 
 /* ---------- game ---------- */
 const TIME_LIMIT=20;
 let state='idle',angle=0,speed=0,timeLeft=TIME_LIMIT,holding=false,auto=false,autoStop=0,pressed=false,last=performance.now(),lastBeep=99;
 const segAt=a=>Math.floor(mod(a,360)/STEP)+1;
+const topSpeed=()=>DIFF[cfg.diff].max*cfg.speed;
 
 function startSpin(isAuto){
-  state='spin';holding=!isAuto;auto=isAuto;speed=60;autoStop=performance.now()+1500+Math.random()*2500;
-  setMode('spin');hideToast();if(isAuto)toast('TIME UP!','Auto spin…','#ff9800','show',1200);
+  state='spin';holding=!isAuto;auto=isAuto;speed=Math.min(20,topSpeed());autoStop=performance.now()+2500+Math.random()*4000;
+  marks.replaceChildren();setMode('spin');hideToast();if(isAuto)toast('TIME UP!','Auto spin…','#ff9800','show',1200);
 }
 function advance(dt){
-  const m=cfg.speed;speed=Math.min(DIFF[cfg.diff].max*m,speed+750*m*dt);
+  speed=Math.min(topSpeed(),speed+Math.max(60,600*cfg.speed)*dt);
   const prev=angle;angle+=speed*dt;
   for(let n=1;n<=7;n++){const c=centerOf(n);if(Math.floor((angle-c)/360)>Math.floor((prev-c)/360)){SFX.tick();flashNum(n);}}
 }
@@ -255,25 +270,25 @@ function stopHand(){
   if(state!=='spin')return;
   const now=performance.now();advance(Math.max(0,(now-last)/1000));last=now;
   const wasAuto=auto;holding=false;auto=false;state='result';
-  const a=mod(angle,360),tol=DIFF[cfg.diff].tol;let best=null;
-  for(let n=1;n<=7;n++){const d=Math.abs(mod(a-centerOf(n)+180,360)-180);if(!best||d<best.d)best={n,d};}
-  const off=best.d.toFixed(1)+'°';
-  if(best.d<=tol){
-    setMode('win');SFX.win();nums[best.n].classList.add('win');
-    toast('WINNER!',best.d<.6?`Perfect stop on ${best.n}!`:`Number ${best.n} · ${off} from centre`,'','show',3000);
-    setTimeout(()=>{nums[best.n].classList.remove('win');resetHand(wasAuto);},3000);
+  hand.setAttribute('transform',`rotate(${mod(angle,360).toFixed(3)} 200 200)`);
+  const a=mod(angle,360),n=segAt(a),m=DIFF[cfg.diff].m,res=fit(n,a);
+  if(res.min>=m){
+    setMode('win');SFX.win();nums[n].classList.add('win');
+    toast('WINNER!',`The star fits inside ${n}`,'','show',3000);
+    setTimeout(()=>{nums[n].classList.remove('win');resetHand(wasAuto);},3000);
   }else{
-    setMode('lose');SFX.lose();flashNum(best.n,'miss',1800);
-    const close=best.d<tol*2.2;
-    toast(close?'SO CLOSE!':'MISSED',`${off} away from ${best.n}`,close?'#ff9800':'#ff5252');
-    setTimeout(()=>resetHand(wasAuto),2300);
+    setMode('lose');SFX.lose();
+    res.pts.forEach(([p,d],i)=>{if(d<m&&i%2===0)el('circle',{cx:p[0].toFixed(2),cy:p[1].toFixed(2),r:2.2,fill:'#ff1744',stroke:'#fff','stroke-width':.7},marks);});
+    const touched=res.min>-10;
+    toast(touched?'TOUCHED THE LINE':'MISSED',touched?`The star crossed the outline of ${n}`:'Stop the star inside a number’s outline',touched?'#ff9800':'#ff5252');
+    setTimeout(()=>resetHand(wasAuto),2600);
   }
 }
 let goIdle=false;
-function resetHand(toIdle){state='reset';setMode('idle');goIdle=toIdle;}
+function resetHand(toIdle){state='reset';setMode('idle');goIdle=toIdle;marks.replaceChildren();}
 function afterReset(){
   angle=0;
-  if(goIdle){state='idle';timeLeft=TIME_LIMIT;setMode('idle');toast('PRESS & HOLD','Release when the ★ is on a number','','idle',0);}
+  if(goIdle){state='idle';timeLeft=TIME_LIMIT;setMode('idle');toast('PRESS & HOLD','Let go when the ★ fits inside a number’s outline','','idle',0);}
   else{state='ready';timeLeft=TIME_LIMIT;lastBeep=99;setMode('ready');}
 }
 
@@ -301,7 +316,7 @@ for(const k in DIFF){const b=document.createElement('button');b.dataset.v=k;b.te
 function renderSettings(){
   diffBtns.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===cfg.diff));
   $('#sndBtns').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',(b.dataset.v==='1')===cfg.sound));
-  speedRange.value=cfg.speed;$('#speedVal').textContent=`${cfg.speed.toFixed(2)}× · ${Math.round(DIFF[cfg.diff].max*cfg.speed/6)} RPM`;
+  speedRange.value=cfg.speed;$('#speedVal').textContent=`${cfg.speed.toFixed(2)}× · ${(topSpeed()/6).toFixed(1)} RPM`;
 }
 $('#gear').addEventListener('click',()=>{renderSettings();settings.classList.add('show');});
 $('#close').addEventListener('click',()=>settings.classList.remove('show'));
@@ -331,10 +346,12 @@ function frame(){
   }
   if(state==='reset'){const target=Math.ceil(angle/360-1e-9)*360;angle=Math.min(target,angle+300*dt);if(angle>=target)afterReset();}
   timeTxt.textContent=timeLeft.toFixed(1).padStart(4,'0');
-  hand.setAttribute('transform',`rotate(${mod(angle,360).toFixed(3)} 200 200)`);
+  if(state!=='result')hand.setAttribute('transform',`rotate(${mod(angle,360).toFixed(3)} 200 200)`);
   renderLeds(now);
   requestAnimationFrame(frame);
 }
+Object.defineProperty(window,'__superStarFit',{value:(n,deg)=>fit(n,deg).min});
+Object.defineProperty(window,'__superStarPose',{value:deg=>{if(state==='idle'){angle=deg;hideToast();}}});
 renderSettings();
 requestAnimationFrame(frame);
 })();
