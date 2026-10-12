@@ -69,7 +69,7 @@ body{background:radial-gradient(ellipse at 50% 45%,#272040 0%,var(--bg) 70%);col
 
 <div id="face" aria-label="Super Star clock. Press and hold to spin, release to stop the star inside a number's outline." role="button" tabindex="0">
   <svg id="clock" viewBox="0 0 400 400"></svg>
-  <div id="toast" class="idle"><div class="box"><h2 id="toastH">PRESS &amp; HOLD</h2><p id="toastP">Let go when the ★ fits inside a number's outline</p></div></div>
+  <div id="toast" class="idle"><div class="box"><h2 id="toastH">PRESS &amp; HOLD</h2><p id="toastP">Let go when both corners of the ★ fit</p></div></div>
 </div>
 
 <button id="gear" aria-label="Settings">⚙</button>
@@ -79,7 +79,7 @@ body{background:radial-gradient(ellipse at 50% 45%,#272040 0%,var(--bg) 70%);col
   <div class="opt"><span>Difficulty</span><div class="seg-btns" id="diffBtns"></div></div>
   <div class="opt"><label for="speedRange">Hand speed</label><div class="slider"><input type="range" id="speedRange" min="0.05" max="2.5" step="0.05" value="0.15"><output id="speedVal" for="speedRange">0.15×</output></div></div>
   <div class="opt"><span>Sound</span><div class="seg-btns" id="sndBtns"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
-  <p class="note">Hold the clock (or <b>Space</b>) to spin the hand. Let go when the whole star fits inside the outline around a number. If any part of the star touches the outline, it's a miss. Easy lets the star overlap the line a little; Hard and Expert need a clear gap.</p>
+  <p class="note">Hold the clock (or <b>Space</b>) to spin the hand. Let go when the star's two side corners both drop past the shoulders into the narrow part of a number's outline. If a corner lands on the line, it's a miss. Harder levels need more room around each corner.</p>
   <button id="close">CLOSE</button>
 </div></div>
 
@@ -95,25 +95,23 @@ const mod=(a,n)=>((a%n)+n)%n;
 const COLORS=['','#e3141f','#f05a1e','#e9b000','#45ad2b','#1d5ad6','#1e2190','#b4168f'];
 const STEP=360/7;
 const centerOf=n=>(n-.5)*STEP;                 // 1 at 25.7°, 4 at the bottom, 7 at 334.3°
-const NR=148;                                   // number ring radius = distance of the star centre from the pivot
-const SR=34,SRI=14.5;                           // star outer and inner radius (black outline edge)
-const GAP=5;                                    // how far the outline sits outside the star when perfectly lined up
+const NR=148;                                   // radius of the number circles
+const SNR=140,SR=30,SRI=12.8;                   // star centre radius from the pivot, star outer/inner radius (black edge)
 const P=(r,deg)=>{const a=deg*Math.PI/180;return[200+r*Math.sin(a),200-r*Math.cos(a)];};
 const W=(g,x,r)=>{const a=g*Math.PI/180;return[200+r*Math.sin(a)+x*Math.cos(a),200-r*Math.cos(a)+x*Math.sin(a)];};
 const f2=p=>p[0].toFixed(2)+' '+p[1].toFixed(2);
 function starArr(R,r,cx,cy,k=5){const s=[];for(let i=0;i<k*2;i++){const rr=i%2?r:R,a=i*Math.PI/k;s.push([cx+rr*Math.sin(a),cy-rr*Math.cos(a)]);}return s;}
 const starPts=(...a)=>starArr(...a).map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join(' ');
 function wedge(r,a0,a1){return`M200 200 L${f2(P(r,a0))} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${f2(P(r,a1))}Z`;}
-// point in the star's own frame (x = clockwise, y = outward) around number n
-function local(n,x,y){const c=centerOf(n)*Math.PI/180,[cx,cy]=P(NR,centerOf(n));return[cx+x*Math.cos(c)+y*Math.sin(c),cy+x*Math.sin(c)-y*Math.cos(c)];}
-// the star's convex hull (a pentagon) grown by GAP: this is the pocket the star has to fit in
-const HULL=(()=>{const v=[0,4,3,2,1].map(i=>{const a=i*72*Math.PI/180;return[SR*Math.sin(a),SR*Math.cos(a)];});  // top, left, lower-left, lower-right, right (CCW, y up)
-  const out=[];for(let i=0;i<5;i++){const a=v[(i+4)%5],b=v[i],c=v[(i+1)%5];
-    const n1=norm([b[1]-a[1],-(b[0]-a[0])]),n2=norm([c[1]-b[1],-(c[0]-b[0])]),k=GAP/(1+n1[0]*n2[0]+n1[1]*n2[1]);
-    out.push([b[0]+(n1[0]+n2[0])*k,b[1]+(n1[1]+n2[1])*k]);}
-  return{top:out[0],ls:out[1],ll:out[2],rl:out[3],rs:out[4]};})();
 function norm(v){const l=Math.hypot(v[0],v[1]);return[v[0]/l,v[1]/l];}
-const TOOTH=[[-14,112],[-14,104],[-6,104],[-6,98],[0,98]];   // stepped tooth between two pockets, outer -> tip, on the side before the gap
+// pocket around each number, measured off the real machine (angle from the number's axis, radius from the pivot):
+// a wide upper part, a shoulder that steps in, a narrower neck and a curved outer edge.
+// The star's two side corners sit just past the shoulders: they fit only if both drop into the neck.
+const PK={inner:[20.7,118.5],upper:[21.3,150.3],shoulder:[13.2,148.9],neck:[15.1,178.6],arc:183};
+function arcPts(r,a0,a1){const k=Math.max(1,Math.ceil(Math.abs(a1-a0)/1.5)),o=[];for(let i=0;i<=k;i++)o.push(P(r,a0+(a1-a0)*i/k));return o;}
+function pocketPts(n){const c=centerOf(n),g0=c-STEP/2,g1=c+STEP/2,A=PK;
+  return[...arcPts(A.inner[1],g0,c-A.inner[0]),P(A.upper[1],c-A.upper[0]),P(A.shoulder[1],c-A.shoulder[0]),P(A.neck[1],c-A.neck[0]),
+    ...arcPts(A.arc,c-14.4,c+14.4),P(A.neck[1],c+A.neck[0]),P(A.shoulder[1],c+A.shoulder[0]),P(A.upper[1],c+A.upper[0]),...arcPts(A.inner[1],c+A.inner[0],g1)];}
 
 /* ---------- build the face ---------- */
 const svg=$('#clock'),defs=el('defs',{},svg);
@@ -130,14 +128,14 @@ el('rect',{x:0,y:0,width:400,height:400,rx:10,fill:'url(#panel)'},svg);
 el('rect',{x:2,y:2,width:396,height:396,rx:9,fill:'none',stroke:'#c9b2ff','stroke-width':3,opacity:.5,filter:'url(#blur)'},svg);
 for(const [x,y] of[[16,384],[384,384],[386,14]]){el('circle',{cx:x,cy:y,r:5.5,fill:'url(#steel)',stroke:'#80858f','stroke-width':1},svg);el('line',{x1:x-3,y1:y,x2:x+3,y2:y,stroke:'#6b7079','stroke-width':1.3},svg);}
 // white LED strip at the left edge
-{const g=el('g',{class:'leds',filter:'url(#glow)'},svg);for(let y=8;y<=392;y+=8){el('circle',{cx:8,cy:y,r:1.5,fill:'#fff'},g);el('circle',{cx:15,cy:y+4,r:1.5,fill:'#fff'},g);}}
+{const g=el('g',{class:'leds',filter:'url(#glow)'},svg);for(let y=8;y<=392;y+=8){el('circle',{cx:5,cy:y,r:1.4,fill:'#fff'},g);el('circle',{cx:10.5,cy:y+4,r:1.4,fill:'#fff'},g);}}
 
 // grooved colour disc
 for(const [a0,a1,col] of[[0,55,'#e3262f'],[55,95,'#ee4a25'],[95,125,'#f7801f'],[125,175,'#f6c623'],[175,205,'#43b649'],[205,255,'#2a6fdb'],[255,300,'#1d2a78'],[300,360,'#8a2aa6']])
-  el('path',{d:wedge(88,a0,a1),fill:col},svg);
-for(let r=30;r<=86;r+=2.8)el('circle',{cx:200,cy:200,r:r.toFixed(1),fill:'none',stroke:'#fff','stroke-width':.6,opacity:.35},svg);
-el('circle',{cx:200,cy:200,r:88,fill:'none',stroke:'#1b1a33','stroke-width':3},svg);
-{const [lx,ly]=P(62,122);
+  el('path',{d:wedge(84,a0,a1),fill:col},svg);
+for(let r=30;r<=82;r+=2.8)el('circle',{cx:200,cy:200,r:r.toFixed(1),fill:'none',stroke:'#fff','stroke-width':.6,opacity:.35},svg);
+el('circle',{cx:200,cy:200,r:84,fill:'none',stroke:'#1b1a33','stroke-width':3},svg);
+{const [lx,ly]=P(60,122);
  el('text',{x:lx,y:ly-1,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':9,fill:'#ffd21f',stroke:'#c2185b','stroke-width':1.6,'paint-order':'stroke'},svg).textContent='SUPER';
  el('text',{x:lx,y:ly+8,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':9,fill:'#ffd21f',stroke:'#c2185b','stroke-width':1.6,'paint-order':'stroke'},svg).textContent='STAR';
  el('polygon',{points:starPts(5,2.1,lx+17,ly+2),fill:'#ff4fa3',stroke:'#fff','stroke-width':.8},svg);}
@@ -151,21 +149,19 @@ for(let n=1;n<=7;n++){
   nums[n]=g;
 }
 
-// outline: one closed edge-lit line. Each number sits in a pocket cut to the star's shape; a stepped tooth
-// with a screw separates neighbouring pockets. Segment n = half tooth + pocket n + half tooth.
+// outline: one closed edge-lit line made of the seven pockets; between pockets it forms a mushroom-shaped
+// tooth of acrylic that holds a screw. Segment n runs from the middle of one tooth to the middle of the next.
 const segs=[],pockets=[];
 for(let n=1;n<=7;n++){
-  const gPrev=(n-1)*STEP,gNext=n*STEP,H=HULL;
-  const pts=[...TOOTH.slice().reverse().map(([x,r])=>W(gPrev,-x,r)),local(n,...H.ll),local(n,...H.ls),local(n,...H.top),local(n,...H.rs),local(n,...H.rl),...TOOTH.map(([x,r])=>W(gNext,x,r))];
-  const d='M'+pts.map(f2).join(' L');
+  const pts=pocketPts(n),d='M'+pts.map(f2).join(' L');
   const g=el('g',{class:'seg'},svg);
   el('path',{d,class:'glow',fill:'none','stroke-width':10,'stroke-linejoin':'round','stroke-linecap':'round',filter:'url(#blur)'},g);
   el('path',{d,fill:'none',stroke:'#ffffff','stroke-width':3.2,'stroke-linejoin':'round','stroke-linecap':'round'},g);
-  segs[n]=g;pockets[n]=densify(pts,1);
+  segs[n]=g;pockets[n]=densify(pts,.75);
 }
 function densify(pts,step){const out=[];for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],k=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/step));for(let j=0;j<k;j++)out.push([a[0]+(b[0]-a[0])*j/k,a[1]+(b[1]-a[1])*j/k]);}out.push(pts[pts.length-1]);return out;}
-// standoff screws in the acrylic between pockets
-for(let k=0;k<7;k++){const [x,y]=W(k*STEP,0,150);el('circle',{cx:x,cy:y,r:6,fill:'url(#steel)',stroke:'#6b7079','stroke-width':1},svg);el('circle',{cx:x,cy:y,r:2.4,fill:'#4a4e56'},svg);}
+// standoff screws in the acrylic teeth
+for(let k=0;k<7;k++){const [x,y]=P(155,k*STEP);el('circle',{cx:x,cy:y,r:6.5,fill:'url(#steel)',stroke:'#6b7079','stroke-width':1},svg);el('circle',{cx:x,cy:y,r:2.6,fill:'#4a4e56'},svg);}
 
 // TIME display
 el('text',{x:360,y:30,'text-anchor':'middle','font-family':'"Luckiest Guy",Impact,sans-serif','font-size':17,fill:'#d9b21a',stroke:'#3a2a00','stroke-width':2.2,'paint-order':'stroke','letter-spacing':1},svg).textContent='TIME';
@@ -177,9 +173,9 @@ const timeTxt=el('text',{x:360,y:51,'text-anchor':'middle','font-family':'Orbitr
 function bez(p,t){const u=1-t;return[0,1].map(i=>u*u*u*p[0][i]+3*u*u*t*p[1][i]+3*u*t*t*p[2][i]+t*t*t*p[3][i]);}
 function ribbon(p,w0,w1,N=36){const L=[],R=[];for(let i=0;i<=N;i++){const t=i/N,a=bez(p,t),b=bez(p,Math.min(1,t+.01)),c=bez(p,Math.max(0,t-.01)),n=norm([-(b[1]-c[1]),b[0]-c[0]]),w=(w0+(w1-w0)*t)/2;
   L.push([a[0]+n[0]*w,a[1]+n[1]*w]);R.push([a[0]-n[0]*w,a[1]-n[1]*w]);}return'M'+L.map(f2).join(' L')+' L'+R.reverse().map(f2).join(' L')+'Z';}
-const STEMC=[[200,192],[217,150],[183,110],[200,70]],TAILC=[[200,210],[206,250],[183,282],[190,320]];
-const STEM=ribbon(STEMC,22,12),TAIL=ribbon(TAILC,24,36),SY=200-NR;
-const hand=el('g',{filter:'url(#hs)'},svg);
+const STEMC=[[200,192],[216,154],[184,118],[200,80]],TAILC=[[200,210],[206,250],[183,282],[190,320]];
+const STEM=ribbon(STEMC,22,12),TAIL=ribbon(TAILC,24,36),SY=200-SNR;
+const hand=el('g',{},svg);
 const frost={fill:'#fdfbff',stroke:'#fdfbff','stroke-width':10,'stroke-linejoin':'round',opacity:.95};
 el('path',{d:TAIL,...frost},hand);el('path',{d:STEM,...frost},hand);el('circle',{cx:200,cy:200,r:37,...frost},hand);
 el('polygon',{points:starPts(SR,SRI,200,SY),...frost,'stroke-width':12},hand);
@@ -196,23 +192,23 @@ el('polygon',{points:starPts(13.5,4.2,200,200,16),fill:'#1a237e'},hand);
 el('polygon',{points:starPts(8.5,3,200,200,8),fill:'#3f51b5'},hand);
 el('circle',{cx:200,cy:200,r:4,fill:'url(#steel)',stroke:'#555','stroke-width':.8},hand);
 el('polygon',{points:starPts(SR,SRI,200,SY),...dark,'stroke-width':2},hand);
-el('polygon',{points:starPts(31,13.2,200,SY),fill:'#e9e51c'},hand);
-el('polygon',{points:starPts(22.5,9.6,200,SY),fill:'#7a1a10'},hand);
-el('polygon',{points:starPts(21,9,200,SY),fill:'#f0a51c'},hand);
-el('polygon',{points:starPts(8.5,3.6,200,SY),fill:'#1a237e'},hand);
+el('polygon',{points:starPts(27.4,11.7,200,SY),fill:'#e9e51c'},hand);
+el('polygon',{points:starPts(19.9,8.5,200,SY),fill:'#7a1a10'},hand);
+el('polygon',{points:starPts(18.5,7.9,200,SY),fill:'#f0a51c'},hand);
+el('polygon',{points:starPts(7.5,3.2,200,SY),fill:'#1a237e'},hand);
 const marks=el('g',{},svg);
 
 /* ---------- star fit ---------- */
-const STAR=densify([...starArr(SR,SRI,200,SY),starArr(SR,SRI,200,SY)[0]],1.5);
+const CORNERS=[2,8].map(i=>starArr(SR,SRI,200,SY)[i]);   // the star's two side corners (clockwise, counter-clockwise)
 function rot(p,deg){const a=deg*Math.PI/180,c=Math.cos(a),s=Math.sin(a),x=p[0]-200,y=p[1]-200;return[200+x*c-y*s,200+x*s+y*c];}
 function inside(p,poly){let k=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])k=!k;}return k;}
 function distTo(p,poly){let m=1e9;for(const q of poly){const d=(q[0]-p[0])**2+(q[1]-p[1])**2;if(d<m)m=d;}return Math.sqrt(m);}
-// smallest signed distance from the star's edge to the outline: positive = inside with that much room
-function fit(n,deg){let min=1e9;const pts=[];for(const s of STAR){const p=rot(s,deg),d=(inside(p,pockets[n])?1:-1)*distTo(p,pockets[n]);pts.push([p,d]);if(d<min)min=d;}return{min,pts};}
+// signed room around each corner: positive = inside the pocket with that much clearance to the line
+function fit(n,deg){const pts=CORNERS.map(s=>{const p=rot(s,deg);return[p,(inside(p,pockets[n])?1:-1)*distTo(p,pockets[n])];});return{min:Math.min(...pts.map(q=>q[1])),pts};}
 
 /* ---------- settings ---------- */
 // m = room the star must keep from the outline's centre line (the line is 3.2 wide, so 1.6 means "not touching")
-const DIFF={easy:{m:-3,max:300,label:'Easy'},normal:{m:1.6,max:300,label:'Normal'},hard:{m:3,max:300,label:'Hard'},expert:{m:4,max:300,label:'Expert'}};
+const DIFF={easy:{m:0,max:300,label:'Easy'},normal:{m:2,max:300,label:'Normal'},hard:{m:3.5,max:300,label:'Hard'},expert:{m:5,max:300,label:'Expert'}};
 const SPEED_MIN=.05,SPEED_MAX=2.5,KEY='superstar.face.v2';
 let cfg={diff:'normal',speed:.15,sound:true};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
@@ -272,15 +268,15 @@ function stopHand(){
   const wasAuto=auto;holding=false;auto=false;state='result';
   hand.setAttribute('transform',`rotate(${mod(angle,360).toFixed(3)} 200 200)`);
   const a=mod(angle,360),n=segAt(a),m=DIFF[cfg.diff].m,res=fit(n,a);
+  res.pts.forEach(([p,d])=>{const ok=d>=m;el('circle',{cx:p[0].toFixed(2),cy:p[1].toFixed(2),r:5,fill:ok?'#00c853':'#ff1744','fill-opacity':.35,stroke:ok?'#00c853':'#ff1744','stroke-width':2},marks);});
   if(res.min>=m){
     setMode('win');SFX.win();nums[n].classList.add('win');
-    toast('WINNER!',`The star fits inside ${n}`,'','show',3000);
+    toast('WINNER!',`Both corners of the star fit in ${n}`,'','show',3000);
     setTimeout(()=>{nums[n].classList.remove('win');resetHand(wasAuto);},3000);
   }else{
     setMode('lose');SFX.lose();
-    res.pts.forEach(([p,d],i)=>{if(d<m&&i%2===0)el('circle',{cx:p[0].toFixed(2),cy:p[1].toFixed(2),r:2.2,fill:'#ff1744',stroke:'#fff','stroke-width':.7},marks);});
-    const touched=res.min>-10;
-    toast(touched?'TOUCHED THE LINE':'MISSED',touched?`The star crossed the outline of ${n}`:'Stop the star inside a number’s outline',touched?'#ff9800':'#ff5252');
+    const bad=res.pts.filter(q=>q[1]<m).length;
+    toast(bad===2?'NO FIT':'SO CLOSE!',bad===2?'Neither corner of the star fits':'One corner of the star is on the line',bad===2?'#ff5252':'#ff9800');
     setTimeout(()=>resetHand(wasAuto),2600);
   }
 }
@@ -288,7 +284,7 @@ let goIdle=false;
 function resetHand(toIdle){state='reset';setMode('idle');goIdle=toIdle;marks.replaceChildren();}
 function afterReset(){
   angle=0;
-  if(goIdle){state='idle';timeLeft=TIME_LIMIT;setMode('idle');toast('PRESS & HOLD','Let go when the ★ fits inside a number’s outline','','idle',0);}
+  if(goIdle){state='idle';timeLeft=TIME_LIMIT;setMode('idle');toast('PRESS & HOLD','Let go when both corners of the ★ fit','','idle',0);}
   else{state='ready';timeLeft=TIME_LIMIT;lastBeep=99;setMode('ready');}
 }
 
